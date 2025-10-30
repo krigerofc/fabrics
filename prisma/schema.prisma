@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/backend/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// Usuário (Dono da loja)
+// Lembre-se de usar bcrypt para hash
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+  sales    Sale[]
+}
+
+// Produto/Pacote (ex: Pacote de lã)
+model Product {
+  id          String   @id @default(cuid())
+  name        String   // ex: "Lã Vermelha"
+  description String?
+  unit        String   // ex: "metros", "unidades", "kg"
+  
+  // Quantidade total do pacote
+  totalQuantity Decimal  @db.Decimal(10, 2) // ex: 100 metros
+
+  // Quantidade disponível (diminui conforme vende)
+  availableQuantity Decimal @db.Decimal(10, 2) // ex: 97 metros
+  
+  // Preço por unidade
+  pricePerUnit Decimal @db.Decimal(10, 2) // ex: 5.00 por metro
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  saleItems SaleItem[]
+  
+  @@index([userId])
+}
+
+// Venda
+model Sale {
+  id          String   @id @default(cuid())
+  saleNumber  String   @unique // Número da venda (ex: "VENDA-001")
+  customerName String? // Nome do cliente (opcional)
+  
+  totalAmount Decimal  @db.Decimal(10, 2) // Valor total da venda
+  
+  status      SaleStatus @default(PENDING) // Status da venda
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  items    SaleItem[]
+  payment  Payment?
+  
+  @@index([userId])
+  @@index([saleNumber])
+}
+
+// Item da venda (produto vendido)
+model SaleItem {
+  id       String  @id @default(cuid())
+  
+  quantity Decimal @db.Decimal(10, 2) // Quantidade vendida (ex: 3 metros)
+  pricePerUnit Decimal @db.Decimal(10, 2) // Preço unitário no momento da venda
+  subtotal Decimal @db.Decimal(10, 2) // quantity * pricePerUnit
+  
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  @@index([saleId])
+  @@index([productId])
+}
+
+// Pagamento
+model Payment {
+  id            String        @id @default(cuid())
+  
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod // Método de pagamento
+  status        PaymentStatus @default(PENDING)
+  
+  transactionId String?       // ID da transação (se houver gateway)
+  
+  paidAt        DateTime?     // Quando foi pago
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  saleId String @unique
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  
+  @@index([saleId])
+}
+
+// Enums
+enum SaleStatus {
+  PENDING    // Pendente
+  COMPLETED  // Concluída
+  CANCELLED  // Cancelada
+}
+
+enum PaymentMethod {
+  CASH       // Dinheiro
+  CREDIT_CARD // Cartão de crédito
+  DEBIT_CARD  // Cartão de débito
+  PIX         // PIX
+  BANK_TRANSFER // Transferência bancária
+}
+
+enum PaymentStatus {
+  PENDING   // Pendente
+  PAID      // Pago
+  FAILED    // Falhou
+  REFUNDED  // Reembolsado
+}
