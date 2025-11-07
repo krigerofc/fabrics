@@ -42,9 +42,7 @@ export class User {
 
   static async getByEmail(email: string) {
     try {
-      return await prisma.user.findUnique({
-        where: { email }
-      })
+      return await prisma.user.findUnique({ where: { email }  });
     } catch (err: any) {
       throw new Error(`getUserByEmail failed: ${err?.message ?? String(err)}`)
     }
@@ -67,9 +65,7 @@ export class User {
 
   static async delete(id: string) {
     try {
-      return await prisma.user.delete({
-        where: { id }
-      })
+      return await prisma.user.delete({ where: { id } });
     } catch (err: any) {
       throw new Error(`deleteUser failed: ${err?.message ?? String(err)}`)
     }

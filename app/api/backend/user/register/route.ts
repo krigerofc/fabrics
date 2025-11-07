@@ -2,7 +2,7 @@
 import { User } from "@/backend/models/user";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-import { email, z } from "zod";
+import { z } from "zod";
 
 const registerSchema = z.object({
   email: z.string().trim().email({ message: "Email inválido" }),
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const data = registerSchema.parse(body);
+    console.log(body)
 
     if(!data.password || !data.confirm_password || !data.name || !data.email) return NextResponse.json({ message: 'Preencha todos os campos!', success: false });
     if(data.password != data.confirm_password) return NextResponse.json({ message: 'Verifique se as senhas coincidem!', success: false });

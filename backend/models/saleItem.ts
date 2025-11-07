@@ -24,9 +24,7 @@ export class SaleItem {
 
   static async getById(id: string) {
     try {
-      return await prisma.saleItem.findUnique({
-        where: { id }
-      })
+      return await prisma.saleItem.findUnique({ where: { id } });
     } catch (err: any) {
       throw new Error(`getSaleItemById failed: ${err?.message ?? String(err)}`)
     }
@@ -49,9 +47,7 @@ export class SaleItem {
 
   static async delete(id: string) {
     try {
-      return await prisma.saleItem.delete({
-        where: { id }
-      })
+      return await prisma.saleItem.delete({ where: { id } });
     } catch (err: any) {
       throw new Error(`deleteSaleItem failed: ${err?.message ?? String(err)}`)
     }

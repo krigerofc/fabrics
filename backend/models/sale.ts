@@ -25,10 +25,7 @@ export class Sale {
 
   static async getById(id: string) {
     try {
-      return await prisma.sale.findUnique({
-        where: { id },
-        include: { items: true, payment: true }
-      })
+      return await prisma.sale.findUnique({ where: { id }, include: { items: true, payment: true } });
     } catch (err: any) {
       throw new Error(`getSaleById failed: ${err?.message ?? String(err)}`)
     }
@@ -36,10 +33,7 @@ export class Sale {
 
   static async getByNumber(saleNumber: string) {
     try {
-      return await prisma.sale.findUnique({
-        where: { saleNumber },
-        include: { items: true, payment: true }
-      })
+      return await prisma.sale.findUnique({ where: { saleNumber }, include: { items: true, payment: true } });
     } catch (err: any) {
       throw new Error(`findSaleByNumber failed: ${err?.message ?? String(err)}`)
     }

@@ -24,17 +24,31 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  categorys Category[]
   products Product[]
   sales    Sale[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  products Product[]
 }
 
 // Produto/Pacote (ex: Pacote de lã)
 model Product {
   id          String   @id @default(cuid())
   name        String   // ex: "Lã Vermelha"
+  IsUnitBased  Boolean  @default(false) // true se vendido por unidade, false se por pacote
+  IsMetre  Boolean  @default(false) // true se vendido por unidade, false se por pacote
   description String?
-  unit        String   // ex: "metros", "unidades", "kg"
-  
+
   // Quantidade total do pacote
   totalQuantity Decimal  @db.Decimal(10, 2) // ex: 100 metros
 
@@ -47,11 +61,15 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+
+
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
   saleItems SaleItem[]
-  
   @@index([userId])
 }
 

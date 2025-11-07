@@ -28,9 +28,7 @@ export class Payment {
 
   static async getById(id: string) {
     try {
-      return await prisma.payment.findUnique({
-        where: { id }
-      })
+      return await prisma.payment.findUnique({ where: { id } });
     } catch (err: any) {
       throw new Error(`getPaymentById failed: ${err?.message ?? String(err)}`)
     }
@@ -38,9 +36,7 @@ export class Payment {
 
   static async getBySaleId(saleId: string) {
     try {
-      return await prisma.payment.findUnique({
-        where: { saleId }
-      })
+      return await prisma.payment.findUnique({ where: { saleId } });
     } catch (err: any) {
       throw new Error(`getPaymentBySaleId failed: ${err?.message ?? String(err)}`)
     }
@@ -68,9 +64,7 @@ export class Payment {
 
   static async delete(id: string) {
     try {
-      return await prisma.payment.delete({
-        where: { id }
-      })
+      return await prisma.payment.delete({  where: { id } });
     } catch (err: any) {
       throw new Error(`deletePayment failed: ${err?.message ?? String(err)}`)
     }
