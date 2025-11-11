@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req:NextRequest){
     try{
         const body = await req.json();
-        console.log(body)
         if(!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) return NextResponse.json({message:"Informe o nome da categoria!", success:false})
         
         const user_Id = await AuthServer.Get_UserId();

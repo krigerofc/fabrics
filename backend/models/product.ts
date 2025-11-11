@@ -9,7 +9,6 @@ export class Product {
   static async countByCategory(categoryId: string): Promise<number> {
         try {
             if (!categoryId || typeof categoryId !== 'string')  return 0;
-            
             const productCount = await prisma.product.count({   where: { categoryId: categoryId,} });
             return productCount;
         } catch (error:any) {
@@ -40,36 +39,31 @@ export class Product {
     }
   }
 
-  static async getById(id: string) {
+  static async getById(id: string, userId: string) {
     try {
-      return await prisma.product.findUnique({
-        where: { id },
-        include: {
-          user: true,
-          saleItems: true
-        }
-      });
+      return await prisma.product.findUnique({  where: { id: id, userId: userId }  });
     } catch (err: any) {
       throw new Error(`getProductById failed: ${err?.message ?? String(err)}`)
     }
   }
 
-  static async update( 
-    id: string, name?: string, categoryId?: string,
+  static async update( id: string, userId: string, name?: string,  categoryId?: string,
     totalQuantity?: number, availableQuantity?: number, pricePerUnit?: number, 
-    isUnitBased?: boolean, isMetre?: boolean, // Adicionadas
-    description?: string) {
+    isUnitBased?: boolean, isMetre?: boolean, description?: string ) {
     try {
       return await prisma.product.update({
-        where: { id },
+        where: { 
+          id,
+          userId,
+        },
         data: {
           ...(name ? { name } : {}),
           ...(categoryId ? { categoryId } : {}),
           ...(totalQuantity ? { totalQuantity } : {}),
           ...(availableQuantity ? { availableQuantity } : {}),
           ...(pricePerUnit ? { pricePerUnit } : {}),
-          ...(isUnitBased !== undefined ? { IsUnitBased: isUnitBased } : {}), // Adicionada
-          ...(isMetre !== undefined ? { IsMetre: isMetre } : {}), // Adicionada
+          ...(isUnitBased != null ? { IsUnitBased: isUnitBased } : {}), 
+          ...(isMetre != null ? { IsMetre: isMetre } : {}), 
           ...(description ? { description } : {})
         }
       });
@@ -78,32 +72,38 @@ export class Product {
     }
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, userId: string) {
     try {
-      return await prisma.product.delete({
-        where: { id }
-      });
+      return await prisma.product.delete({ where: { id: id, userId: userId } });
     } catch (err: any) {
       throw new Error(`deleteProduct failed: ${err?.message ?? String(err)}`)
     }
   }
 
-  static async list( userId?: string, skip?: number, take?: number, orderBy?: 'asc' | 'desc') {
+  static async getByName( name: string, userId?: string) {
     try {
-      return await prisma.product.findMany({
-        where: userId ? { userId } : undefined,
-        skip,
-        take,
-        orderBy: orderBy ? { createdAt: orderBy } : undefined,
-        include: {
-          user: true,
-          _count: {
-            select: {
-              saleItems: true
-            }
-          }
-        }
+      if (!name || typeof name !== 'string') return null;
+
+      return await prisma.product.findFirst({
+        where: {
+          name: {
+            equals: name.trim(),
+            mode: 'insensitive' as const,
+          },
+          userId: userId, 
+        },
       });
+      
+    } catch (err: any) {
+      throw new Error(`getProductsByName failed: ${err?.message ?? String(err)}`);
+    }
+  }
+
+  static async list( userId?: string) {
+    try {
+      return await prisma.product.findMany({  
+        where: { userId }, 
+        orderBy: { createdAt: 'desc' } });
     } catch (err: any) {
       throw new Error(`listProducts failed: ${err?.message ?? String(err)}`)
     }

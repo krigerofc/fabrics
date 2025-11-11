@@ -45,8 +45,6 @@ model Category {
 model Product {
   id          String   @id @default(cuid())
   name        String   // ex: "Lã Vermelha"
-  IsUnitBased  Boolean  @default(false) // true se vendido por unidade, false se por pacote
-  IsMetre  Boolean  @default(false) // true se vendido por unidade, false se por pacote
   description String?
 
   // Quantidade total do pacote

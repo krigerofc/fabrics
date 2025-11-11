@@ -14,4 +14,16 @@ export class AuthServer {
         if (!session || !session.user || !session.user.id) return null;
         return session.user.id;
     }
+
+    static async Get_UserName() {
+        const session = await this.getSession();
+        if (!session || !session.user || !session.user.name) return null;
+        return session.user.name;
+    }
+
+    static async Get_UserEmail() {
+        const session = await this.getSession();
+        if (!session || !session.user || !session.user.email) return null;
+        return session.user.email;
+    }
 }
