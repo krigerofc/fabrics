@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 export class Sale {
   private constructor() {}
 
-  static async createSale(userId: string,saleNumber: string,totalAmount: number,customerName?: string, 
+  static async createSale(userId: string, saleNumber: string, totalAmount: number, customerName?: string, 
     status: 'PENDING' | 'COMPLETED' | 'CANCELLED' = 'PENDING') {
     try {
       return await prisma.sale.create({

@@ -18,7 +18,8 @@ export class Product {
 
   static async create( userId: string, name: string, categoryId:string,
     totalQuantity: number, availableQuantity: number,pricePerUnit: number, 
-    isUnitBased: boolean = false, isMetre: boolean = false, // Adicionadas com default false
+    price: number, batchId: string,
+    isUnitBased: boolean = false, isMetre: boolean = false, 
     description?: string) {
     try {
       return await prisma.product.create({
@@ -29,13 +30,15 @@ export class Product {
           totalQuantity:totalQuantity,
           availableQuantity:availableQuantity,
           pricePerUnit:pricePerUnit,
+          price:price,
           categoryId:categoryId,
+          batchId:batchId,
           IsUnitBased: isUnitBased, // Adicionada
           IsMetre: isMetre // Adicionada
         }
       });
     } catch (err: any) {
-      throw new Error(`createProduct failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar criar produto: ${err?.message ?? String(err)}`)
     }
   }
 
@@ -43,12 +46,13 @@ export class Product {
     try {
       return await prisma.product.findUnique({  where: { id: id, userId: userId }  });
     } catch (err: any) {
-      throw new Error(`getProductById failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar pegar produto pelo ID: ${err?.message ?? String(err)}`)
     }
   }
 
   static async update( id: string, userId: string, name?: string,  categoryId?: string,
     totalQuantity?: number, availableQuantity?: number, pricePerUnit?: number, 
+    price?: number, batchId?: string,
     isUnitBased?: boolean, isMetre?: boolean, description?: string ) {
     try {
       return await prisma.product.update({
@@ -62,13 +66,15 @@ export class Product {
           ...(totalQuantity ? { totalQuantity } : {}),
           ...(availableQuantity ? { availableQuantity } : {}),
           ...(pricePerUnit ? { pricePerUnit } : {}),
+          ...(price ? { price } : {}),
+          ...(batchId ? { batchId } : {}),
           ...(isUnitBased != null ? { IsUnitBased: isUnitBased } : {}), 
           ...(isMetre != null ? { IsMetre: isMetre } : {}), 
           ...(description ? { description } : {})
         }
       });
     } catch (err: any) {
-      throw new Error(`updateProduct failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar atualizar produto: ${err?.message ?? String(err)}`)
     }
   }
 
@@ -76,7 +82,7 @@ export class Product {
     try {
       return await prisma.product.delete({ where: { id: id, userId: userId } });
     } catch (err: any) {
-      throw new Error(`deleteProduct failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar deletar produto: ${err?.message ?? String(err)}`)
     }
   }
 
@@ -95,7 +101,7 @@ export class Product {
       });
       
     } catch (err: any) {
-      throw new Error(`getProductsByName failed: ${err?.message ?? String(err)}`);
+      throw new Error(`Erro ao tentar pegar produto por nome: ${err?.message ?? String(err)}`);
     }
   }
 
@@ -105,7 +111,7 @@ export class Product {
         where: { userId }, 
         orderBy: { createdAt: 'desc' } });
     } catch (err: any) {
-      throw new Error(`listProducts failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar listar produtos: ${err?.message ?? String(err)}`)
     }
   }
 }

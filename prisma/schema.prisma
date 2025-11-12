@@ -27,6 +27,7 @@ model User {
   categorys Category[]
   products Product[]
   sales    Sale[]
+  batches  Batch[]
 }
 
 model Category {
@@ -41,11 +42,27 @@ model Category {
   products Product[]
 }
 
+model Batch {
+  id                String   @id @default(cuid())
+  name              String
+  quantityOfProducts Int
+  batchNumber       String 
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+
+  products Product[]
+}
+
 // Produto/Pacote (ex: Pacote de lã)
 model Product {
   id          String   @id @default(cuid())
   name        String   // ex: "Lã Vermelha"
   description String?
+  price       Decimal?  @db.Decimal(10, 2)
 
   // Quantidade total do pacote
   totalQuantity Decimal  @db.Decimal(10, 2) // ex: 100 metros
@@ -56,9 +73,11 @@ model Product {
   // Preço por unidade
   pricePerUnit Decimal @db.Decimal(10, 2) // ex: 5.00 por metro
   
+  IsMetre     Boolean  @default(false)
+  IsUnitBased Boolean  @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
 
 
   userId String
@@ -66,6 +85,9 @@ model Product {
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  batchId String?
+  batch   Batch?  @relation(fields: [batchId], references: [id], onDelete: Restrict)
 
   saleItems SaleItem[]
   @@index([userId])

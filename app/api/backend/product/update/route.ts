@@ -11,7 +11,7 @@ export async function PUT(req:NextRequest){
         if(!user_Id) return NextResponse.json({ message:"Faça login para continuar!", success:false });
 
         const { id, name, categoryId, description, isUnitBased, isMetre,
-                totalQuantity, availableQuantity, pricePerUnit } = body;
+                totalQuantity, availableQuantity, pricePerUnit, price, batchId } = body;
 
         if (!id) {
             return NextResponse.json({ message: "ID do produto é obrigatório!", success: false });
@@ -48,16 +48,19 @@ export async function PUT(req:NextRequest){
         const parsedTotalQuantity = totalQuantity !== undefined ? Number(totalQuantity) : undefined;
         const parsedAvailableQuantity = availableQuantity !== undefined ? Number(availableQuantity) : undefined;
         const parsedPricePerUnit = pricePerUnit !== undefined ? Number(pricePerUnit) : undefined;
+        const parsedPrice = price !== undefined ? Number(price) : undefined;
 
         if ( (parsedTotalQuantity !== undefined && isNaN(parsedTotalQuantity)) || 
              (parsedAvailableQuantity !== undefined && isNaN(parsedAvailableQuantity)) || 
-             (parsedPricePerUnit !== undefined && isNaN(parsedPricePerUnit)) ) {
+             (parsedPricePerUnit !== undefined && isNaN(parsedPricePerUnit)) ||
+             (parsedPrice !== undefined && isNaN(parsedPrice)) ) {
             return NextResponse.json({ message: "Quantidades e preço devem ser números válidos.", success: false }); 
         }
 
         if ( (parsedTotalQuantity !== undefined && parsedTotalQuantity < 0) || 
              (parsedAvailableQuantity !== undefined && parsedAvailableQuantity < 0) || 
-             (parsedPricePerUnit !== undefined && parsedPricePerUnit <= 0) ) {
+             (parsedPricePerUnit !== undefined && parsedPricePerUnit <= 0) ||
+             (parsedPrice !== undefined && parsedPrice <= 0) ) {
             return NextResponse.json({ message: "Quantidades devem ser não-negativas e o preço deve ser positivo.", success: false }); 
         }
 
@@ -70,7 +73,7 @@ export async function PUT(req:NextRequest){
 
         const finalDescription = description ? description.trim() : existing_product.description;
 
-        const updated_product = await Product.update(id, user_Id, name, categoryId, parsedTotalQuantity, parsedAvailableQuantity, parsedPricePerUnit, isUnitBased, isMetre, finalDescription);
+        const updated_product = await Product.update(id, user_Id, name, categoryId, parsedTotalQuantity, parsedAvailableQuantity, parsedPricePerUnit, parsedPrice, batchId, isUnitBased, isMetre, finalDescription);
         if(!updated_product) return NextResponse.json({ message:"Falha ao atualizar produto!", success:false })
         return NextResponse.json({ message:'Produto atualizado com sucesso!', success:true })
    }catch(error){

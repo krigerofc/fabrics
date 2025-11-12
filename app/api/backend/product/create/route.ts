@@ -10,8 +10,8 @@ export async function POST(req:NextRequest){
         const user_Id = await AuthServer.Get_UserId();
         if(!user_Id) return NextResponse.json({ message:"Faça login para continuar!", success:false });
 
-        if (!body.name || !body.categoryId || typeof body.totalQuantity === 'undefined' || typeof body.availableQuantity === 'undefined' || typeof body.pricePerUnit === 'undefined'){
-            return NextResponse.json({ message: "Nome, Categoria, Quantidades e Preço são obrigatórios!", success: false });
+        if (!body.name || !body.categoryId || typeof body.totalQuantity === 'undefined' || typeof body.availableQuantity === 'undefined' || typeof body.pricePerUnit === 'undefined' || typeof body.price === 'undefined' || !body.batchId){
+            return NextResponse.json({ message: "Nome, Categoria, Quantidades, Preço e Lote são obrigatórios!", success: false });
         }
 
         if (typeof body.isUnitBased !== 'boolean' || typeof body.isMetre !== 'boolean' ) {
@@ -26,15 +26,16 @@ export async function POST(req:NextRequest){
         }
 
         const { name, categoryId, description, isUnitBased, isMetre,
-                totalQuantity, availableQuantity, pricePerUnit } = body;
+                totalQuantity, availableQuantity, pricePerUnit, price, batchId } = body;
 
         const parsedTotalQuantity = Number(totalQuantity);
         const parsedAvailableQuantity = Number(availableQuantity);
         const parsedPricePerUnit = Number(pricePerUnit);
+        const parsedPrice = Number(price);
 
-        if (isNaN(parsedTotalQuantity) || isNaN(parsedAvailableQuantity) || isNaN(parsedPricePerUnit)) {
+        if (isNaN(parsedTotalQuantity) || isNaN(parsedAvailableQuantity) || isNaN(parsedPricePerUnit) || isNaN(parsedPrice)) {
             return NextResponse.json({ message: "Quantidades e preço devem ser números válidos.", success: false }); }
-        if (parsedTotalQuantity < 0 || parsedAvailableQuantity < 0 || parsedPricePerUnit <= 0) {
+        if (parsedTotalQuantity < 0 || parsedAvailableQuantity < 0 || parsedPricePerUnit <= 0 || parsedPrice <= 0) {
             return NextResponse.json({ message: "Quantidades devem ser não-negativas e o preço deve ser positivo.", success: false }); }
 
         if (parsedAvailableQuantity > parsedTotalQuantity) {
@@ -52,7 +53,7 @@ export async function POST(req:NextRequest){
 
         const finalDescription = description ? description.trim() : null;
 
-        const new_product = await Product.create(user_Id, name, categoryId, parsedTotalQuantity, parsedAvailableQuantity, parsedPricePerUnit, isUnitBased, isMetre, finalDescription);
+        const new_product = await Product.create(user_Id, name, categoryId, parsedTotalQuantity, parsedAvailableQuantity, parsedPricePerUnit, parsedPrice, batchId, isUnitBased, isMetre, finalDescription);
         if(!new_product) return NextResponse.json({ message:"Falha ao criar produto!", success:false })
 
         console.log(new_product);
