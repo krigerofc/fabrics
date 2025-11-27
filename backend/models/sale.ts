@@ -1,86 +1,84 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient, Sale, SaleStatus } from '@prisma/client'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export class Sale {
+export class SaleModel {
   private constructor() {}
 
-  static async createSale(userId: string, saleNumber: string, totalAmount: number, customerName?: string, 
-    status: 'PENDING' | 'COMPLETED' | 'CANCELLED' = 'PENDING') {
+  static async createSale(data: {
+    userId: string
+    saleNumber: string
+    customerName?: string
+    quantity: Prisma.Decimal
+    pricePerUnit: Prisma.Decimal
+    totalAmount: Prisma.Decimal
+    status?: SaleStatus
+    productId: string
+    paymentId?: string
+  }) {
     try {
-      return await prisma.sale.create({
-        data: {
-          userId,
-          saleNumber,
-          customerName,
-          totalAmount,
-          status
-        }
-      })
+      return await prisma.sale.create({ data })
     } catch (err: any) {
-      throw new Error(`createSale failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar criar venda: ${err?.message ?? String(err)}`);
     }
   }
 
-  static async getById(id: string) {
+
+  static async getSaleById(id: string, userId: string) {
     try {
-      return await prisma.sale.findUnique({ where: { id }, include: { items: true, payment: true } });
+      return await prisma.sale.findUnique({ where: { id, userId } });
     } catch (err: any) {
-      throw new Error(`getSaleById failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar pegar venda pelo ID: ${err?.message ?? String(err)}`);
     }
   }
 
-  static async getByNumber(saleNumber: string) {
-    try {
-      return await prisma.sale.findUnique({ where: { saleNumber }, include: { items: true, payment: true } });
-    } catch (err: any) {
-      throw new Error(`findSaleByNumber failed: ${err?.message ?? String(err)}`)
-    }
-  }
 
-  static async update( id: string, customerName?: string, totalAmount?: number,
-    status?: 'PENDING' | 'COMPLETED' | 'CANCELLED') {
-    try {
-      return await prisma.sale.update({
-        where: { id },
-        data: {
-          ...(customerName ? { customerName } : {}),
-          ...(totalAmount ? { totalAmount } : {}),
-          ...(status ? { status } : {})
-        }
-      })
-    } catch (err: any) {
-      throw new Error(`updateSale failed: ${err?.message ?? String(err)}`)
-    }
-  }
 
-  static async delete(id: string) {
-    try {
-      return await prisma.sale.delete({ where: { id } })
-    } catch (err: any) {
-      throw new Error(`deleteSale failed: ${err?.message ?? String(err)}`)
-    }
-  }
-
-  static async list( userId?: string, 
-    status?: 'PENDING' | 'COMPLETED' | 'CANCELLED', 
-    skip?: number, take?: number, orderBy?: 'asc' | 'desc' ) {
+  static async getAllSales(userId: string) {
     try {
       return await prisma.sale.findMany({
-        where: {
-          ...(userId ? { userId } : {}),
-          ...(status ? { status } : {})
-        },
-        skip,
-        take,
-        orderBy: orderBy ? { createdAt: orderBy } : undefined,
-        include: { items: true }
-      })
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
     } catch (err: any) {
-      throw new Error(`listSales failed: ${err?.message ?? String(err)}`)
+      throw new Error(`Erro ao tentar listar vendas: ${err?.message ?? String(err)}`);
+    }
+  }
+
+
+
+  static async getSalesBySaleNumber(userId: string, saleNumber: string) {
+    try {
+      return await prisma.sale.findMany({  where: { userId, saleNumber }, });
+    } catch (err: any) {
+      throw new Error(`Erro ao tentar pegar vendas pelo número da venda: ${err?.message ?? String(err)}`);
+    }
+  }
+
+
+
+  static async updateSale(id: string, userId:string, data: Partial<Sale>) {
+    try {
+
+      return await prisma.sale.update({
+        where: { id, userId },
+        data, 
+      });
+
+    } catch (err: any) {
+      throw new Error(`Erro ao tentar atualizar venda: ${err?.message ?? String(err)}`);
+    }
+  }
+
+
+
+
+  static async deleteSale(id:string, userId: string) {
+    try {
+      return await prisma.sale.delete({ where: { id, userId },  });
+    } catch (err: any) {
+      throw new Error(`Erro ao tentar deletar venda: ${err?.message ?? String(err)}`);
     }
   }
 }
-
-
